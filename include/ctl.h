@@ -53,31 +53,25 @@ namespace ctl {
 	class spec_reporter : public reporter {
 	public:
 		void before() {
-			std::clog << std::endl;
+			std::cout << std::endl;
 		}
 
 		void after() {
-			std::clog << std::endl;
+			std::cout << std::endl;
 			if (this->completed > 0) {
-				print_indentation();
-				std::clog << green(std::to_string(this->completed) + " " + (this->completed == 1 ? "test" : "tests") + " completed") << std::endl;
-				std::clog << reset_esc;
+				std::cout << padding() << green(std::to_string(this->completed) + " " + (this->completed == 1 ? "test" : "tests") + " completed") << std::endl;
 			}
 			if (this->failed > 0) {
-				print_indentation();
-				std::clog << red(std::to_string(this->failed) + " " + (this->failed == 1 ? "test" : "tests") + " failed") << std::endl;
+				std::cout << padding() << red(std::to_string(this->failed) + " " + (this->failed == 1 ? "test" : "tests") + " failed") << std::endl;
 			}
 			if (this->pending > 0) {
-				print_indentation();
-				std::clog << cyan(std::to_string(this->pending) + " " + (this->pending == 1 ? "test" : "tests") + " pending") << std::endl;
+				std::cout << padding() << cyan(std::to_string(this->pending) + " " + (this->pending == 1 ? "test" : "tests") + " pending") << std::endl;
 			}
-			std::clog << std::endl;
+			std::cout << std::endl;
 		}
 
 		void suite_begin(const std::string& description) {
-			print_indentation();
-			std::clog << description;
-			std::clog << std::endl;
+			std::cout << padding() << description << std::endl;
 			indentation++;
 		}
 
@@ -86,44 +80,79 @@ namespace ctl {
 		}
 
 		void pending_suite(const std::string& description) {
-			print_indentation();
-			std::clog << cyan("- ") << cyan(description) << std::endl;
+			std::cout << padding() << cyan("- ") << cyan(description) << std::endl;
 		}
 
 		void completed_test(const std::string& description) {
 			completed++;
-			print_indentation();
-			std::clog << green("✓ ") << grey(description) << std::endl;
+			std::cout << padding() << green("✓ ") << grey(description) << std::endl;
 		}
 
 		void failed_test(const std::string& description, const std::string& error_text) {
 			failed++;
-			print_indentation();
-			std::clog << red("✖ ") << red(description) << std::endl;
-			indentation++;
-			print_indentation();
-			indentation--;
-			std::clog << red(error_text);
-			std::clog << std::endl;
+			std::cout << padding() << red("✖ ") << red(description) << std::endl;
+			std::cout << padding() << "  " << red(error_text) << std::endl;
 		}
 
 		void pending_test(const std::string& description) {
 			pending++;
-			print_indentation();
-			std::clog << cyan("- ") << cyan(description) << std::endl;
+			std::cout << padding() << cyan("- ") << cyan(description) << std::endl;
 		}
 
 	private:
-		int indentation = 2;
+		int indentation = 0;
 		int completed = 0;
 		int failed = 0;
 		int pending = 0;
 
-		void print_indentation() {
-			for(int i = 0; i < this->indentation; ++i) {
-				std::clog << "  ";
-			}
+		std::string padding() {
+			return std::string(indentation * 2, ' ');
 		}
+	};
+
+	class short_reporter : public reporter {
+	public:
+		void before() {}
+
+		void after() {
+			std::cout << std::endl;
+			if (this->completed > 0) {
+				std::cout << green(std::to_string(this->completed) + " " + (this->completed == 1 ? "test" : "tests") + " completed") << std::endl;
+			}
+			if (this->failed > 0) {
+				std::cout << red(std::to_string(this->failed) + " " + (this->failed == 1 ? "test" : "tests") + " failed") << std::endl;
+			}
+			if (this->pending > 0) {
+				std::cout << cyan(std::to_string(this->pending) + " " + (this->pending == 1 ? "test" : "tests") + " pending") << std::endl;
+			}
+			std::cout << std::endl;
+		}
+
+		void suite_begin(const std::string& description) {}
+
+		void suite_end(const std::string& description) {}
+
+		void pending_suite(const std::string& description) {}
+
+		void completed_test(const std::string& description) {
+			completed++;
+		}
+
+		void failed_test(const std::string& description, const std::string& error_text) {
+			failed++;
+			std::cout << red("✖ ") << red(description) << std::endl;
+			std::cout << "  " << red(error_text);
+			std::cout << std::endl;
+		}
+
+		void pending_test(const std::string& description) {
+			pending++;
+		}
+
+	private:
+		int completed = 0;
+		int failed = 0;
+		int pending = 0;
 	};
 }
 
@@ -165,18 +194,17 @@ namespace ctl {
 		current_reporter->pending_test(description);
 	}
 
-	void expect_ok(const bool condition, const std::string& message = "") {
+	void expect_ok(bool condition, const std::string& message = "") {
 		if(!condition) {
 			throw std::runtime_error(std::string("Expected condition to be true. ") + message);
 		}
 	}
 
-	void expect_fail(const bool condition, const std::string& message = "") {
+	void expect_fail(bool condition, const std::string& message = "") {
 		if(condition) {
 			throw std::runtime_error(std::string("Expected condition to be false. ") + message);
 		}
 	}
-
 	template<typename Type>
 	void expect_equal(Type actual, Type expected, const std::string& message = "") {
 		if(actual != expected) {

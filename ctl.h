@@ -1,3 +1,11 @@
+/*
+	CTL - C++ Testing Library
+
+	Copyright (c) 2019 Vladislav Kaminsky(wlodzislav@ya.ru)
+
+	MIT License <https://github.com/wlodzislav/ctl/blob/master/LICENSE>
+*/
+
 #ifndef CTL_H
 #define CTL_H
 

@@ -8,6 +8,8 @@
 #include <sstream>
 #include <stdexcept>
 
+using namespace std::string_literals;
+
 namespace ctl {
 	class reporter {
 		public:
@@ -24,12 +26,11 @@ namespace ctl {
 }
 
 namespace {
-	const std::string grey_esc = "\x1B[90m";
-	const std::string green_esc = "\x1B[32m";
-	const std::string red_esc = "\x1B[31m";
-	const std::string cyan_esc = "\x1B[36m";
-
-	const std::string reset_esc = "\x1B[39m";
+	auto grey_esc = "\x1B[90m"s;
+	auto green_esc = "\x1B[32m"s;
+	auto red_esc = "\x1B[31m"s;
+	auto cyan_esc = "\x1B[36m"s;
+	auto reset_esc = "\x1B[39m"s;
 
 	std::string grey(const std::string& text) {
 		return grey_esc + text + reset_esc;
@@ -52,9 +53,7 @@ namespace {
 namespace ctl {
 	class spec_reporter : public reporter {
 	public:
-		void before() {
-			std::cout << std::endl;
-		}
+		void before() {}
 
 		void after() {
 			std::cout << std::endl;
@@ -67,7 +66,6 @@ namespace ctl {
 			if (this->pending > 0) {
 				std::cout << padding() << cyan(std::to_string(this->pending) + " " + (this->pending == 1 ? "test" : "tests") + " pending") << std::endl;
 			}
-			std::cout << std::endl;
 		}
 
 		void suite_begin(const std::string& description) {
@@ -115,7 +113,6 @@ namespace ctl {
 		void before() {}
 
 		void after() {
-			std::cout << std::endl;
 			if (this->completed > 0) {
 				std::cout << green(std::to_string(this->completed) + " " + (this->completed == 1 ? "test" : "tests") + " completed") << std::endl;
 			}
@@ -125,7 +122,6 @@ namespace ctl {
 			if (this->pending > 0) {
 				std::cout << cyan(std::to_string(this->pending) + " " + (this->pending == 1 ? "test" : "tests") + " pending") << std::endl;
 			}
-			std::cout << std::endl;
 		}
 
 		void suite_begin(const std::string& description) {}
@@ -157,7 +153,7 @@ namespace ctl {
 }
 
 namespace {
-	std::unique_ptr<ctl::reporter> current_reporter = std::make_unique<ctl::spec_reporter>();
+	auto current_reporter = std::make_unique<ctl::spec_reporter>();
 
 	struct guard {
 		guard() {

@@ -2,7 +2,7 @@
 
 Simplest possible single-header C++14 testing library inspired by [mocha](https://mochajs.org).
 
-![Image of spec reporter output](spec.png)
+<img src="spec.png" width="416" height="260"/>
 
 Example:
 
@@ -60,7 +60,7 @@ In the same way any custom checker could be implemented, see `examples/custom-ch
 
 ### Spec(default)
 
-![Image of spec reporter output](spec.png)
+<img src="spec.png" width="416" height="260"/>
 
 ### Short
 
@@ -70,7 +70,7 @@ To use code add to `main`:
 	current_reporter.reset(new ctl::short_reporter());
 ```
 
-![Image of short reporter output](short.png)
+<img src="short.png" width="279" height="124"/>
 
 ## API
 

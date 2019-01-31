@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <cstdlib>
 
 using namespace std::string_literals;
 
@@ -47,7 +48,6 @@ namespace {
 	std::string cyan(const std::string& text) {
 		return cyan_esc + text + reset_esc;
 	}
-
 }
 
 namespace ctl {
@@ -150,33 +150,74 @@ namespace ctl {
 		int failed = 0;
 		int pending = 0;
 	};
+
+	auto current_reporter = std::make_unique<ctl::spec_reporter>();
 }
 
 namespace {
-	auto current_reporter = std::make_unique<ctl::spec_reporter>();
+	auto nop = []{};
+	auto before_hook = std::function<void (void)>{nop};
+	auto after_hook = std::function<void (void)>{nop};
+	auto before_each_hook = std::function<void (void)>{nop};
+	auto after_each_hook = std::function<void (void)>{nop};
+	auto first_call = true;
+	auto first_test = true;
 
-	struct guard {
-		guard() {
-			current_reporter->before();
-			}
-		~guard() {
-			current_reporter->after();
-			}
-	} guard;
+	void do_after_tests() {
+		after_hook();
+		ctl::current_reporter->after();
+	}
+
+	void do_before_tests() {
+		if (first_call) {
+			first_call = false;
+			before_hook();
+			ctl::current_reporter->before();
+			std::atexit(do_after_tests);
+		}
+	}
+
 }
 
 namespace ctl {
 	void describe(const std::string& description, std::function<void (void)> suit) {
+		do_before_tests();
+
+		auto prev_before_each_hook = before_each_hook;
+		before_each_hook = nop;
+		auto prev_after_each_hook = after_each_hook;
+		after_each_hook = nop;
+		auto prev_before_hook = before_hook;
+		before_hook = nop;
+		auto prev_after_hook = after_hook;
+		after_hook = nop;
+
+		auto prev_first_test = first_test;
+		first_test = true;
 		current_reporter->suite_begin(description);
 		suit();
+		after_hook();
 		current_reporter->suite_end(description);
+		first_test = prev_first_test;
+
+		before_each_hook = prev_before_each_hook;
+		after_each_hook = prev_after_each_hook;
+		before_hook = prev_before_hook;
+		after_hook = prev_after_hook;
 	}
 
 	void describe(const std::string& description) {
+		do_before_tests();
 		current_reporter->pending_suite(description);
 	}
 
 	void it(const std::string& description, std::function<void (void)> test) {
+		if (first_test) {
+			first_test = false;
+			before_hook();
+		}
+		do_before_tests();
+		before_each_hook();
 		try {
 			test();
 			current_reporter->completed_test(description);
@@ -184,21 +225,39 @@ namespace ctl {
 		catch (std::exception &e) {
 			current_reporter->failed_test(description, e.what());
 		}
+		after_each_hook();
 	}
 
 	void it(const std::string& description) {
+		do_before_tests();
 		current_reporter->pending_test(description);
+	}
+
+	void before(std::function<void (void)> hook) {
+		before_hook = hook;
+	}
+
+	void after(std::function<void (void)> hook) {
+		after_hook = hook;
+	}
+
+	void before_each(std::function<void (void)> hook) {
+		before_each_hook = hook;
+	}
+
+	void after_each(std::function<void (void)> hook) {
+		after_each_hook = hook;
 	}
 
 	void expect_ok(bool condition, const std::string& message = "") {
 		if(!condition) {
-			throw std::runtime_error(std::string("Expected condition to be true. ") + message);
+			throw std::runtime_error(std::string("Expect condition to be true. ") + message);
 		}
 	}
 
 	void expect_fail(bool condition, const std::string& message = "") {
 		if(condition) {
-			throw std::runtime_error(std::string("Expected condition to be false. ") + message);
+			throw std::runtime_error(std::string("Expect condition to be false. ") + message);
 		}
 	}
  
@@ -206,7 +265,7 @@ namespace ctl {
 	void expect_equal(const T& actual, const T& expected, const std::string& message = "") {
 		if(!(actual == expected)) {
 			std::stringstream error;
-			error << "Expected \"" << actual << "\" to be equal \"" << expected << "\"";
+			error << "Expect \"" << actual << "\" to be equal \"" << expected << "\"";
 			throw std::runtime_error(error.str());
 		}
 	}

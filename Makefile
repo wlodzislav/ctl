@@ -1,13 +1,13 @@
 CXX = clang++
 CFLAGS = -std=c++14
 
+EXAMPLES = $(patsubst %.cpp, %, $(wildcard examples/*.cpp))
 .PHONY: examples
-examples: example0
-	./example0
+examples: $(EXAMPLES)
 
-example0: example0.cpp include/ctl.h
-	$(CXX) $(CFLAGS) -o $@ example0.cpp
+%: %.cpp ctl.h
+	$(CXX) $(CFLAGS) -o $@ $< && ./$@
 
 .PHONY: clean
 clean:
-	rm ./example0
+	rm ${EXAMPLES}

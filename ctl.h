@@ -22,14 +22,14 @@ using namespace std::string_literals;
 namespace ctl {
 	class reporter {
 		public:
-			virtual void before() = 0;
-			virtual void after() = 0;
-			virtual void suite_begin(const std::string& description) = 0;
-			virtual void suite_end(const std::string& description) = 0;
-			virtual void pending_suite(const std::string& description) = 0;
-			virtual void completed_test(const std::string& description) = 0;
-			virtual void failed_test(const std::string& description, const std::string& error_text) = 0;
-			virtual void pending_test(const std::string& description) = 0;
+			virtual void before() {}
+			virtual void after() {};
+			virtual void suite_begin(const std::string& description) {};
+			virtual void suite_end(const std::string& description) {};
+			virtual void pending_suite(const std::string& description) {};
+			virtual void completed_test(const std::string& description) {};
+			virtual void failed_test(const std::string& description, const std::string& error_text) {};
+			virtual void pending_test(const std::string& description) {};
 			virtual ~reporter() = default;
 	};
 }
@@ -61,8 +61,6 @@ namespace {
 namespace ctl {
 	class spec_reporter : public reporter {
 	public:
-		void before() {}
-
 		void after() {
 			std::cout << std::endl;
 			if (this->completed > 0) {
@@ -118,8 +116,6 @@ namespace ctl {
 
 	class short_reporter : public reporter {
 	public:
-		void before() {}
-
 		void after() {
 			std::cout << std::endl;
 			if (this->completed > 0) {
@@ -132,13 +128,6 @@ namespace ctl {
 				std::cout << cyan(std::to_string(this->pending) + " " + (this->pending == 1 ? "test" : "tests") + " pending") << std::endl;
 			}
 		}
-
-		void suite_begin(const std::string& description) {}
-
-		void suite_end(const std::string& description) {}
-
-		void pending_suite(const std::string& description) {}
-
 		void completed_test(const std::string& description) {
 			completed++;
 		}

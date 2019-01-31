@@ -113,6 +113,7 @@ namespace ctl {
 		void before() {}
 
 		void after() {
+			std::cout << std::endl;
 			if (this->completed > 0) {
 				std::cout << green(std::to_string(this->completed) + " " + (this->completed == 1 ? "test" : "tests") + " completed") << std::endl;
 			}
@@ -151,7 +152,7 @@ namespace ctl {
 		int pending = 0;
 	};
 
-	auto current_reporter = std::make_unique<ctl::spec_reporter>();
+	 auto current_reporter = std::unique_ptr<ctl::reporter>{new ctl::spec_reporter()};
 }
 
 namespace {

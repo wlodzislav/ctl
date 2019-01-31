@@ -7,16 +7,21 @@ class custom {
 public:
 	custom(int a, int b): a(a), b(b) {}
 	bool operator==(const custom& other) const {
-		return a == other.a && b == other.b;
+		return this->a == other.a && this->b == other.b;
 	}
-private:
-	friend std::ostream& operator<<(std::ostream &ss, const custom& a);
 	int a = 0;
 	int b = 0;
 };
 
 std::ostream& operator<<(std::ostream &ss, const custom& c) {
 	return ss << "{ a: " << c.a << ", b: " << c.b << " }";
+}
+
+// Example of compatible check function
+void custom_check(const custom& c) {
+	if(c.a == 0) {
+		throw std::runtime_error("Error: .a shouldn't be 0");
+	}
 }
 
 int main() {
@@ -40,6 +45,10 @@ int main() {
 			describe("Pending inner suite");
 		});
 		it("Some test", []{
+		});
+		it("Some failed test", []{
+			custom a(0, 2);
+			custom_check(a);
 		});
 		it("Pending test");
 	});

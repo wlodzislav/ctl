@@ -60,5 +60,7 @@ int main() {
 
 		it("Pending test");
 	});
+	describe("Suite 2", []{
+	});
 }
 

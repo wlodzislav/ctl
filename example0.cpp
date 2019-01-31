@@ -1,5 +1,4 @@
 #include "include/ctl.h"
-#include "include/assert.h"
 
 using namespace ctl;
 int main() {

@@ -1,5 +1,5 @@
 CXX = clang++
-CFLAGS = -std=c++11
+CFLAGS = -std=c++14
 
 .PHONY: examples
 examples: example0

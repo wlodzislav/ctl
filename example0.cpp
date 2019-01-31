@@ -1,8 +1,28 @@
 #include "include/ctl.h"
 
 using namespace ctl;
+
+// Example of class that could be used in expect_equal
+class custom {
+public:
+	custom(int a, int b): a(a), b(b) {}
+	bool operator==(const custom& other) const {
+		return a == other.a && b == other.b;
+	}
+private:
+	friend std::ostream& operator<<(std::ostream &ss, const custom& a);
+	int a = 0;
+	int b = 0;
+};
+
+std::ostream& operator<<(std::ostream &ss, const custom& c) {
+	return ss << "{ a: " << c.a << ", b: " << c.b << " }";
+}
+
 int main() {
-	current_reporter.reset(new ctl::spec_reporter()); // to change reporter
+	// change reporter, if not changed spec_reporter is used
+	current_reporter.reset(new ctl::spec_reporter());
+	// current_reporter.reset(new ctl::short_reporter());
 
 	describe("Some suite", []{
 		describe("Inner suite", []{
@@ -13,7 +33,9 @@ int main() {
 				expect_fail(1 == 2);
 			});
 			it("Failed inner test", []{
-				expect_equal(1, 2);
+				custom a(1, 2);
+				custom b(3, 4);
+				expect_equal(a, b);
 			});
 			describe("Pending inner suite");
 		});

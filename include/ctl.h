@@ -205,9 +205,10 @@ namespace ctl {
 			throw std::runtime_error(std::string("Expected condition to be false. ") + message);
 		}
 	}
-	template<typename Type>
-	void expect_equal(Type actual, Type expected, const std::string& message = "") {
-		if(actual != expected) {
+ 
+	template<typename T>
+	void expect_equal(const T& actual, const T& expected, const std::string& message = "") {
+		if(!(actual == expected)) {
 			std::stringstream error;
 			error << "Expected \"" << actual << "\" to be equal \"" << expected << "\"";
 			throw std::runtime_error(error.str());
